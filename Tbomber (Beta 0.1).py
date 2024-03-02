@@ -6,12 +6,12 @@ import requests
 from PIL import Image, ImageTk
 import io
 import os
-import webbrowser
+import time  # Adding the time module
 
 class TextBomberApp:
     def __init__(self, master):
         self.master = master
-        self.master.title("TBomber (Beta 0.1)")
+        self.master.title("TBomber (Beta 0.1)")  # Changed title
         self.master.geometry("1366x768")
 
         self.running = False
@@ -65,28 +65,29 @@ class TextBomberApp:
         self.start_stop_button.grid(row=2, column=0, columnspan=2, padx=10, pady=15, sticky="we")
 
         # Create open txt button
-        self.open_txt_button = tk.Button(self.main_frame, text="Open Text File", font=LABEL_FONT, command=self.create_temp_text_file)
+        self.open_txt_button = tk.Button(self.main_frame, text="Open Text File to test", font=LABEL_FONT, command=self.create_temp_text_file)
         self.open_txt_button.grid(row=3, column=0, columnspan=2, padx=10, pady=15, sticky="we")
+
+        # Create open browser button
+        self.open_browser_button = tk.Button(self.main_frame, text="This code is free so small donations means alot to me, Thank you! <3", font=LABEL_FONT, command=self.open_browser)
+        self.open_browser_button.grid(row=4, column=0, columnspan=2, padx=10, pady=15, sticky="we")
 
         # Create message display label
         self.message_display = tk.Label(self.main_frame, text="", font=LABEL_FONT, wraplength=400)
-        self.message_display.grid(row=4, columnspan=2, padx=10, pady=5)
+        self.message_display.grid(row=5, columnspan=2, padx=10, pady=5)
 
         # Create additional message label
         additional_message = "Developed by ItzDod0"
         additional_label = tk.Label(self.main_frame, text=additional_message, font=("Arial", 10, "italic"), fg="red", borderwidth=1, relief="solid")
-        additional_label.grid(row=5, columnspan=2, pady=10, padx=10, sticky="we")
+        additional_label.grid(row=6, columnspan=2, pady=10, padx=10, sticky="we")
 
         # Theme selector
         theme_label = tk.Label(self.main_frame, text="Theme:", font=LABEL_FONT)
-        theme_label.grid(row=6, column=0, padx=10, pady=5, sticky="w")
-        self.theme_selector = ttk.Combobox(self.main_frame, textvariable=self.current_theme, values=list(self.themes.keys()), state="readonly")
-        self.theme_selector.grid(row=6, column=1, padx=10, pady=5)
+        theme_label.grid(row=7, column=0, padx=10, pady=5, sticky="w")
+        self.theme_selector = ttk.Combobox(self.main_frame, textvariable=self.current_theme, values=list(self.themes.keys()))
+        self.theme_selector.grid(row=7, column=1, padx=10, pady=5)
         self.theme_selector.bind("<<ComboboxSelected>>", self.change_theme)
-
-        # Open browser link button
-        self.open_browser_button = tk.Button(self.main_frame, text="This code 100% free so small donation means alot to me, Thank you! <3", font=LABEL_FONT, command=self.open_browser_link)
-        self.open_browser_button.grid(row=7, column=0, columnspan=2, padx=10, pady=15, sticky="we")
+        self.theme_selector["state"] = "readonly"  # Lock the theme selector
 
         self.apply_theme()  # Apply theme initially
 
@@ -98,6 +99,7 @@ class TextBomberApp:
         self.cooldown_label.config(bg=theme["bg"], fg=theme["fg"])
         self.start_stop_button.config(bg=theme["button_bg"], fg=theme["button_fg"])
         self.open_txt_button.config(bg=theme["button_bg"], fg=theme["button_fg"])
+        self.open_browser_button.config(bg=theme["button_bg"], fg=theme["button_fg"])
         self.message_display.config(bg=theme["bg"], fg=theme["fg"])
         self.theme_selector.config(background=theme["bg"], foreground=theme["fg"])
 
@@ -115,11 +117,11 @@ class TextBomberApp:
             message = self.message_entry.get()
             cooldown = float(self.cooldown_entry.get())
         except ValueError:
-            messagebox.showerror("Error", "Bruh you didn't put cooldown time. I bet your education system is American.")
+            messagebox.showerror("Bro you forgot to put the cooldown time or you're using letters to specify a time, I bet your education system is American.")
             return
 
         if not message:
-            messagebox.showerror("Error", "Bro what are you gonna send if you don't enter a message?bruh memes? Enter a message.")
+            messagebox.showerror("Bruh what do you expect to send with no messages? Memes? Enter a message.")
             return
 
         self.running = True
@@ -145,19 +147,24 @@ class TextBomberApp:
         with open(temp_file_path, "w") as f:
             f.write("")
 
-        # Open the temporary text file
-        os.system(f"start {temp_file_path}")
+        print("Attempting to open file...")  # Debug print
+        os.startfile(temp_file_path)
+        print("File opened successfully.")  # Debug print
 
-        # Wait for the file to be closed
-        while os.path.exists(temp_file_path):
-            time.sleep(0.5)
+        # Schedule a check for file existence after 500 milliseconds
+        self.master.after(500, self.check_file_existence, temp_file_path)
 
-        messagebox.showinfo("Temporary Text File", "Temporary text file closed.")
+    def check_file_existence(self, temp_file_path):
+        if not os.path.exists(temp_file_path):
+            messagebox.showinfo("Temporary Text File", "Temporary text file closed.")
+            return
+        # Schedule another check after 500 milliseconds
+        self.master.after(500, self.check_file_existence, temp_file_path)
 
-        os.remove(temp_file_path)
+    def open_browser(self):
+        # Open a browser link
+        os.system("start https://paypal.me/ItzDod0")
 
-    def open_browser_link(self):
-        webbrowser.open("paypal.me/ItzDod0")
 
 def main():
     root = tk.Tk()
